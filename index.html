@@ -1225,8 +1225,14 @@ function openEditIndividual(id){
 }
 
 function handleIndividualSave(){
-  if(_editIndividualId) saveEditIndividual();
-  else saveNewIndividual();
+  const btn=document.getElementById('modalAddIndSaveBtn');
+  if(btn&&btn.disabled) return;
+  if(btn){btn.disabled=true;btn.style.opacity='.5';}
+  setTimeout(()=>{
+    if(_editIndividualId) saveEditIndividual();
+    else saveNewIndividual();
+    if(btn){btn.disabled=false;btn.style.opacity='';}
+  },50);
 }
 
 function saveNewIndividual(){
