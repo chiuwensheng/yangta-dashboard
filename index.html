@@ -1583,8 +1583,9 @@ function updateHeaderStats(){
   const avgW=females.length?+(females.reduce((s,i)=>s+(latestWeight(i.id)||i.weight),0)/females.length).toFixed(1):0;
   const wArr=females.map(i=>latestWeight(i.id)||i.weight);
   const maxW=wArr.length?Math.max(...wArr):0;
-  const target=new Date('2027-03-01');
   const now=new Date();
+  const y=now.getFullYear();
+  const target=[new Date(y,2,1),new Date(y,5,1),new Date(y,8,1),new Date(y+1,2,1)].find(d=>d>now);
   const days=Math.ceil((target-now)/(1000*60*60*24));
   document.getElementById('headerStats').innerHTML=`
     <div class="stat-pill"><span class="val">${DATA.individuals.length}</span><span class="lbl">總個體數</span></div>
