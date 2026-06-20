@@ -651,17 +651,17 @@ function latestWeight(id){
 }
 function getIndividual(id){ return DATA.individuals.find(i=>i.id===id); }
 function readinessColor(w,sex){
-  if(sex==='M') return w>=40?'var(--green)':w>=30?'var(--yellow)':'var(--red)';
-  return w>=60?'var(--green)':w>=50?'var(--yellow)':'var(--red)';
+  if(sex==='M') return w>=30?'var(--green)':w>=22?'var(--yellow)':'var(--red)';
+  return w>=50?'var(--green)':w>=40?'var(--yellow)':'var(--red)';
 }
 function readinessBadge(w,sex){
   if(sex==='M'){
-    if(w>=40) return{cls:'badge-green',txt:'就緒 ✅'};
-    if(w>=30) return{cls:'badge-yellow',txt:'邊緣 ⚠️'};
+    if(w>=30) return{cls:'badge-green',txt:'就緒 ✅'};
+    if(w>=22) return{cls:'badge-yellow',txt:'邊緣 ⚠️'};
     return{cls:'badge-red',txt:'未達標 ✗'};
   }
-  if(w>=60) return{cls:'badge-green',txt:'最佳 ✅'};
-  if(w>=50) return{cls:'badge-yellow',txt:'邊緣 ⚠️'};
+  if(w>=50) return{cls:'badge-green',txt:'就緒 ✅'};
+  if(w>=40) return{cls:'badge-yellow',txt:'邊緣 ⚠️'};
   return{cls:'badge-red',txt:'未達標 ✗'};
 }
 function etaMonths(currentW,targetW,monthlyGain=2.5){
@@ -732,7 +732,7 @@ function renderGallery(list){
   }
   el.innerHTML=`<div class="gallery">${list.map(ind=>{
     const w=latestWeight(ind.id)||ind.weight;
-    const maxW=ind.sex==='M'?55:70;
+    const maxW=ind.sex==='M'?30:50;
     const pct=Math.min(100,Math.round(w/maxW*100));
     const col=readinessColor(w,ind.sex);
     const rb=readinessBadge(w,ind.sex);
@@ -794,7 +794,7 @@ function showIndividual(id){
   const w=latestWeight(id)||ind.weight;
   const logs=DATA.weightLogs.filter(l=>l.individualId===id).sort((a,b)=>a.date.localeCompare(b.date));
   const rb=readinessBadge(w,ind.sex);
-  const eta=ind.species==='amyae'&&ind.sex==='F'? etaMonths(w,60):null;
+  const eta=ind.species==='amyae'?(ind.sex==='F'?etaMonths(w,50):etaMonths(w,30)):null;
 
   // Mini SVG chart
   let chartHtml='';
@@ -923,9 +923,10 @@ function exportIndividualPDF(id){
       return`<circle cx="${x}" cy="${y}" r="4.5" fill="#c9953a" stroke="#fff" stroke-width="1.5"/>
         ${showL?`<text x="${x}" y="${y-9}" font-size="9" fill="#555" text-anchor="middle" font-weight="600">${l.weight}g</text>`:''}`;
     }).join('');
-    const threshLine=(ind.sex==='F'&&50>=mnW&&50<=mxW)?
-      `<line x1="24" y1="${py(50)}" x2="${W-8}" y2="${py(50)}" stroke="#d4a017" stroke-width="1.5" stroke-dasharray="6,4"/>
-       <text x="${W-10}" y="${py(50)-4}" font-size="9" fill="#d4a017" text-anchor="end">50g 門檻</text>`:'';
+    const _thr=ind.sex==='F'?50:30;
+    const threshLine=(_thr>=mnW&&_thr<=mxW)?
+      `<line x1="24" y1="${py(_thr)}" x2="${W-8}" y2="${py(_thr)}" stroke="#d4a017" stroke-width="1.5" stroke-dasharray="6,4"/>
+       <text x="${W-10}" y="${py(_thr)-4}" font-size="9" fill="#d4a017" text-anchor="end">${_thr}g 就緒門檻</text>`:'';
     chartSvg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;background:#faf8f4;border-radius:8px;border:1px solid #ece8e1;overflow:visible">
       ${gridLines}${threshLine}
       <polyline points="${pts}" fill="none" stroke="#c9953a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
@@ -936,8 +937,8 @@ function exportIndividualPDF(id){
   // Breeding readiness bar
   let readinessHtml='';
   if(ind.species==='amyae'){
-    const targetW=ind.sex==='F'?60:40;
-    const minThresh=ind.sex==='F'?50:30;
+    const targetW=ind.sex==='F'?50:30;
+    const minThresh=ind.sex==='F'?40:22;
     const pct=Math.min(100,Math.round((w/targetW)*100));
     const minPct=Math.round((minThresh/targetW)*100);
     const col=w>=targetW?'#16a34a':w>=minThresh?'#d97706':'#dc2626';
